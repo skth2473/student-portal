@@ -106,24 +106,25 @@ export default function MarksCalculator() {
 };
 
   const calculateHybrid2nd = () => {
-    const total =
-      hybrid2ndMarks.attendance +
-      hybrid2ndMarks.mst1 +
-      hybrid2ndMarks.mst2 +
-      hybrid2ndMarks.exp1 +
-      hybrid2ndMarks.exp2 +
-      hybrid2ndMarks.exp3 +
-      hybrid2ndMarks.exp4 +
-      hybrid2ndMarks.classPerformance +
-      hybrid2ndMarks.courseProject +
-      hybrid2ndMarks.endTermPr +
-      hybrid2ndMarks.assignment +
-      hybrid2ndMarks.quiz +
-      hybrid2ndMarks.surpriseTest +
-      hybrid2ndMarks.endTermTh
+  const total =
+    (hybrid2ndMarks.attendance / 2) * 1 +
+    (hybrid2ndMarks.mst1 / 20) * 5 +
+    (hybrid2ndMarks.mst2 / 20) * 5 +
+    (hybrid2ndMarks.exp1 / 30) * 5 +
+    (hybrid2ndMarks.exp2 / 30) * 5 +
+    (hybrid2ndMarks.exp3 / 30) * 5 +
+    (hybrid2ndMarks.exp4 / 30) * 5 +
+    (hybrid2ndMarks.classPerformance / 10) * 5 +
+    (hybrid2ndMarks.courseProject / 10) * 5 +
+    (hybrid2ndMarks.assignment / 10) * 5 +
+    (hybrid2ndMarks.quiz / 4) * 2 +
+    (hybrid2ndMarks.surpriseTest / 12) * 2 +
+    (hybrid2ndMarks.endTermPr / 40) * 20 +
+    (hybrid2ndMarks.endTermTh / 60) * 30;
 
-    setHybrid2ndResult({ total, grade: getGrade(total) })
-  }
+  setHybrid2ndResult({ total, grade: getGrade(total) });
+};
+
 
   const calculatePractical = () => {
     const total = practicalMarks.practicalSum + practicalMarks.labMST + practicalMarks.endTermPractical
