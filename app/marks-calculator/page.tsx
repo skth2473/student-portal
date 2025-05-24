@@ -78,17 +78,18 @@ export default function MarksCalculator() {
   }
 
   const calculateTheory = () => {
-    const total =
-      theoryMarks.assignment +
-      theoryMarks.attendance +
-      theoryMarks.mst1 +
-      theoryMarks.mst2 +
-      theoryMarks.quiz +
-      theoryMarks.surpriseTest +
-      theoryMarks.endTerm
+  const mst1Converted = theoryMarks.mst1 / 2;
+  const mst2Converted = theoryMarks.mst2 / 2;
+  const surpriseTestConverted = (theoryMarks.surpriseTest / 12) * 4;
+  const attendance = theoryMarks.attendance; // out of 2
+  const assignment = theoryMarks.assignment; // out of 10
+  const quiz = theoryMarks.quiz; // out of 4
+  const endTerm = theoryMarks.endTerm;
+  const internalTotal = attendance + assignment + surpriseTestConverted + quiz + mst1Converted + mst2Converted;
+  const total = internalTotal + endTerm;
+  setTheoryResult({ total, grade: getGrade(total) });
+};
 
-    setTheoryResult({ total, grade: getGrade(total) })
-  }
 
   const calculateHybrid = () => {
     const total =
@@ -126,7 +127,7 @@ export default function MarksCalculator() {
 
     setPracticalResult({ total, grade: getGrade(total) })
   }
-
+  // Yha pe sirf aur sirf hm percentage dikhayenge with probable grades  
   const calculateOnline = () => {
     if (onlineMarks.total === 0) return
     const percentage = (onlineMarks.obtained / onlineMarks.total) * 100
