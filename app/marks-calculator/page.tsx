@@ -67,12 +67,12 @@ export default function MarksCalculator() {
   const [onlineResult, setOnlineResult] = useState<{ total: number; grade: string } | null>(null)
 
   const getGrade = (marks: number) => {
-    if (marks >= 90) return "A+"
-    if (marks >= 80) return "A"
-    if (marks >= 70) return "B+"
-    if (marks >= 60) return "B"
-    if (marks >= 50) return "C+"
-    if (marks >= 40) return "C"
+    if (marks >= 95) return "A+"
+    if (marks >= 90) return "A"
+    if (marks >= 80) return "B+"
+    if (marks >= 75) return "B"
+    if (marks >= 60) return "C+"
+    if (marks >= 50) return "C"
     if (marks >= 35) return "D"
     return "F"
   }
@@ -89,18 +89,21 @@ export default function MarksCalculator() {
   const total = internalTotal + endTerm;
   setTheoryResult({ total, grade: getGrade(total) });
 };
-
-
   const calculateHybrid = () => {
-    const total =
-      hybridMarks.internalTheory +
-      hybridMarks.practicalSum +
-      hybridMarks.labMST +
-      hybridMarks.endTermPractical +
-      hybridMarks.endTermTheory
+  const internalTheoryConverted = (hybridMarks.internalTheory / 40) * 20;
+  const practicalSumConverted = (hybridMarks.practicalSum / 300) * 15;
+  const labMSTConverted = (hybridMarks.labMST / 10) * 5;
+  const endTermPracticalConverted = (hybridMarks.endTermPractical / 40) * 20;
+  const endTermTheoryConverted = (hybridMarks.endTermTheory / 60) * 30;
+  const total =
+    internalTheoryConverted +
+    practicalSumConverted +
+    labMSTConverted +
+    endTermPracticalConverted +
+    endTermTheoryConverted;
 
-    setHybridResult({ total, grade: getGrade(total) })
-  }
+  setHybridResult({ total, grade: getGrade(total) });
+};
 
   const calculateHybrid2nd = () => {
     const total =
@@ -127,7 +130,7 @@ export default function MarksCalculator() {
 
     setPracticalResult({ total, grade: getGrade(total) })
   }
-  // Yha pe sirf aur sirf hm percentage dikhayenge with probable grades  
+
   const calculateOnline = () => {
     if (onlineMarks.total === 0) return
     const percentage = (onlineMarks.obtained / onlineMarks.total) * 100
