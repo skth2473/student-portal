@@ -5,120 +5,152 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Plus, Calculator, Home, RotateCcw } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calculator, Home, FileText, Download } from "lucide-react"
 import Link from "next/link"
 
-interface Subject {
-  id: string
-  name: string
-  credit: number
-  grade: string
-}
+export default function MarksCalculator() {
+  // Theory Subjects State
+  const [theoryMarks, setTheoryMarks] = useState({
+    assignment: 0,
+    attendance: 0,
+    mst1: 0,
+    mst2: 0,
+    quiz: 0,
+    surpriseTest: 0,
+    endTerm: 0,
+  })
+  const [theoryResult, setTheoryResult] = useState<{ total: number; grade: string } | null>(null)
 
-const gradePoints: { [key: string]: number } = {
-  "A+": 10,
-  A: 9,
-  "B+": 8,
-  B: 7,
-  "C+": 6,
-  C: 5,
-  D: 4,
-  F: 0,
-}
+  // Hybrid Subjects State
+  const [hybridMarks, setHybridMarks] = useState({
+    internalTheory: 0,
+    practicalSum: 0,
+    labMST: 0,
+    endTermPractical: 0,
+    endTermTheory: 0,
+  })
+  const [hybridResult, setHybridResult] = useState<{ total: number; grade: string } | null>(null)
 
-export default function SGPACalculator() {
-  const [subjects, setSubjects] = useState<Subject[]>([{ id: "1", name: "", credit: 0, grade: "" }])
-  const [sgpa, setSgpa] = useState<number | null>(null)
-  const [totalCredits, setTotalCredits] = useState<number>(0)
+  // Hybrid IInd Year State
+  const [hybrid2ndMarks, setHybrid2ndMarks] = useState({
+    attendance: 0,
+    mst1: 0,
+    mst2: 0,
+    exp1: 0,
+    exp2: 0,
+    exp3: 0,
+    exp4: 0,
+    classPerformance: 0,
+    courseProject: 0,
+    endTermPr: 0,
+    assignment: 0,
+    quiz: 0,
+    surpriseTest: 0,
+    endTermTh: 0,
+  })
+  const [hybrid2ndResult, setHybrid2ndResult] = useState<{ total: number; grade: string } | null>(null)
 
-  const addSubject = () => {
-    const newSubject: Subject = {
-      id: Date.now().toString(),
-      name: "",
-      credit: 0,
-      grade: "",
-    }
-    setSubjects([...subjects, newSubject])
+  // Practical Subjects State
+  const [practicalMarks, setPracticalMarks] = useState({
+    practicalSum: 0,
+    labMST: 0,
+    endTermPractical: 0,
+  })
+  const [practicalResult, setPracticalResult] = useState<{ total: number; grade: string } | null>(null)
+
+  // Online Subjects State
+  const [onlineMarks, setOnlineMarks] = useState({
+    obtained: 0,
+    total: 0,
+  })
+  const [onlineResult, setOnlineResult] = useState<{ total: number; grade: string } | null>(null)
+
+  const getGrade = (marks: number) => {
+    if (marks >= 90) return "A+"
+    if (marks >= 80) return "A"
+    if (marks >= 70) return "B+"
+    if (marks >= 60) return "B"
+    if (marks >= 50) return "C+"
+    if (marks >= 40) return "C"
+    if (marks >= 35) return "D"
+    return "F"
   }
 
-  const removeSubject = (id: string) => {
-    if (subjects.length > 1) {
-      setSubjects(subjects.filter((subject) => subject.id !== id))
-    }
+  const calculateTheory = () => {
+  const mst1Converted = theoryMarks.mst1 / 2;
+  const mst2Converted = theoryMarks.mst2 / 2;
+  const surpriseTestConverted = (theoryMarks.surpriseTest / 12) * 4;
+  const attendance = theoryMarks.attendance; // out of 2
+  const assignment = theoryMarks.assignment; // out of 10
+  const quiz = theoryMarks.quiz; // out of 4
+  const endTerm = theoryMarks.endTerm;
+  const internalTotal = attendance + assignment + surpriseTestConverted + quiz + mst1Converted + mst2Converted;
+  const total = internalTotal + endTerm;
+  setTheoryResult({ total, grade: getGrade(total) });
+};
+
+
+  const calculateHybrid = () => {
+    const total =
+      hybridMarks.internalTheory +
+      hybridMarks.practicalSum +
+      hybridMarks.labMST +
+      hybridMarks.endTermPractical +
+      hybridMarks.endTermTheory
+
+    setHybridResult({ total, grade: getGrade(total) })
   }
 
-  const updateSubject = (id: string, field: keyof Subject, value: string | number) => {
-    setSubjects(subjects.map((subject) => (subject.id === id ? { ...subject, [field]: value } : subject)))
+  const calculateHybrid2nd = () => {
+    const total =
+      hybrid2ndMarks.attendance +
+      hybrid2ndMarks.mst1 +
+      hybrid2ndMarks.mst2 +
+      hybrid2ndMarks.exp1 +
+      hybrid2ndMarks.exp2 +
+      hybrid2ndMarks.exp3 +
+      hybrid2ndMarks.exp4 +
+      hybrid2ndMarks.classPerformance +
+      hybrid2ndMarks.courseProject +
+      hybrid2ndMarks.endTermPr +
+      hybrid2ndMarks.assignment +
+      hybrid2ndMarks.quiz +
+      hybrid2ndMarks.surpriseTest +
+      hybrid2ndMarks.endTermTh
+
+    setHybrid2ndResult({ total, grade: getGrade(total) })
   }
 
-  const calculateSGPA = () => {
-    const validSubjects = subjects.filter(
-      (subject) => subject.credit > 0 && subject.grade && gradePoints[subject.grade] !== undefined,
-    )
+  const calculatePractical = () => {
+    const total = practicalMarks.practicalSum + practicalMarks.labMST + practicalMarks.endTermPractical
 
-    if (validSubjects.length === 0) {
-      alert("Please add at least one valid subject with credit and grade.")
-      return
-    }
-
-    let totalGradePoints = 0
-    let totalCreds = 0
-
-    validSubjects.forEach((subject) => {
-      const gradePoint = gradePoints[subject.grade]
-      totalGradePoints += subject.credit * gradePoint
-      totalCreds += subject.credit
-    })
-
-    const calculatedSGPA = totalGradePoints / totalCreds
-    setSgpa(Math.round(calculatedSGPA * 100) / 100)
-    setTotalCredits(totalCreds)
+    setPracticalResult({ total, grade: getGrade(total) })
   }
 
-  const resetCalculator = () => {
-    setSubjects([{ id: "1", name: "", credit: 0, grade: "" }])
-    setSgpa(null)
-    setTotalCredits(0)
+  const calculateOnline = () => {
+    if (onlineMarks.total === 0) return
+    const percentage = (onlineMarks.obtained / onlineMarks.total) * 100
+    setOnlineResult({ total: Math.round(percentage), grade: getGrade(percentage) })
   }
 
-  const getMotivationalMessage = (sgpa: number) => {
-    if (sgpa >= 9) return "🎉 Excellent! Outstanding performance!"
-    if (sgpa >= 8) return "🌟 Great job! Keep up the good work!"
-    if (sgpa >= 7) return "👍 Good performance! You're doing well!"
-    if (sgpa >= 6) return "📚 Fair performance. Room for improvement!"
-    if (sgpa >= 5) return "⚠️ Average performance. Focus on weak subjects!"
-    return "🚨 Needs significant improvement. Don't give up!"
-  }
-
-  const downloadResults = () => {
-    if (sgpa === null) return
-
+  const downloadResult = (type: string, result: { total: number; grade: string }) => {
     const content = `
-SGPA CALCULATION RESULT
-========================
+MARKS CALCULATION RESULT - ${type.toUpperCase()}
+================================================
 
-SGPA: ${sgpa}
-Total Credits: ${totalCredits}
-${getMotivationalMessage(sgpa)}
-
-SUBJECT DETAILS:
-${subjects
-  .filter((s) => s.credit > 0 && s.grade)
-  .map(
-    (s, i) =>
-      `${i + 1}. ${s.name || "Subject " + (i + 1)}: ${s.credit} credits, Grade ${s.grade} (${gradePoints[s.grade]} points)`,
-  )
-  .join("\n")}
+Total Marks: ${result.total}
+Grade: ${result.grade}
 
 Generated on: ${new Date().toLocaleString()}
+Generated by: StudentHub - CU Marks Calculator
     `.trim()
 
     const blob = new Blob([content], { type: "text/plain" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `SGPA_Result_${new Date().toISOString().split("T")[0]}.txt`
+    a.download = `${type}_Marks_Result_${new Date().toISOString().split("T")[0]}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -138,152 +170,513 @@ Generated on: ${new Date().toLocaleString()}
                   Home
                 </Link>
               </Button>
-              <h1 className="text-2xl font-bold text-white">🧮 SGPA Calculator</h1>
+              <h1 className="text-2xl font-bold text-white">📝 Marks Calculator - CU</h1>
             </div>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Grade Point Reference */}
+        <div className="max-w-6xl mx-auto">
+          {/* Info Card */}
           <Card className="mb-8 bg-gray-800 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-white">Grade Point Reference</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 md:grid-cols-8 gap-4 text-center">
-                {Object.entries(gradePoints).map(([grade, point]) => (
-                  <div key={grade} className="bg-gray-700 p-2 rounded">
-                    <div className="font-bold text-white">{grade}</div>
-                    <div className="text-gray-300">{point}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Subject Input Form */}
-          <Card className="mb-8 bg-gray-800 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white">Enter Subject Details</CardTitle>
+              <CardTitle className="text-white flex items-center">
+                <FileText className="h-6 w-6 mr-2 text-purple-400" />
+                Calculate your Marks and know your Grade
+              </CardTitle>
               <CardDescription className="text-gray-300">
-                Add your subjects with their respective credits and grades
+                Comprehensive marks calculator for all CU subject types
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {subjects.map((subject, index) => (
-                <div key={subject.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-gray-700 rounded-lg">
-                  <div className="md:col-span-5">
-                    <Label htmlFor={`name-${subject.id}`} className="text-gray-300">
-                      Subject Name (Optional)
-                    </Label>
-                    <Input
-                      id={`name-${subject.id}`}
-                      placeholder="e.g., Mathematics"
-                      value={subject.name}
-                      onChange={(e) => updateSubject(subject.id, "name", e.target.value)}
-                      className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor={`credit-${subject.id}`} className="text-gray-300">
-                      Credit *
-                    </Label>
-                    <Input
-                      id={`credit-${subject.id}`}
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      placeholder="3"
-                      value={subject.credit || ""}
-                      onChange={(e) => updateSubject(subject.id, "credit", Number.parseFloat(e.target.value) || 0)}
-                      className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
-                    />
-                  </div>
-
-                  <div className="md:col-span-3">
-                    <Label htmlFor={`grade-${subject.id}`} className="text-gray-300">
-                      Grade *
-                    </Label>
-                    <Select value={subject.grade} onValueChange={(value) => updateSubject(subject.id, "grade", value)}>
-                      <SelectTrigger className="bg-gray-600 border-gray-500 text-white">
-                        <SelectValue placeholder="Select grade" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-700 border-gray-600">
-                        {Object.keys(gradePoints).map((grade) => (
-                          <SelectItem key={grade} value={grade} className="text-white hover:bg-gray-600">
-                            {grade} ({gradePoints[grade]} points)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="md:col-span-2 flex items-end">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeSubject(subject.id)}
-                      disabled={subjects.length === 1}
-                      className="w-full"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex gap-4">
-                <Button
-                  onClick={addSubject}
-                  variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Subject
-                </Button>
-
-                <Button onClick={calculateSGPA} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Calculate SGPA
-                </Button>
-
-                <Button
-                  onClick={resetCalculator}
-                  variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset
-                </Button>
-              </div>
-            </CardContent>
           </Card>
 
-          {/* Results */}
-          {sgpa !== null && (
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Your SGPA Result</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <div className="text-6xl font-bold text-blue-400">{sgpa}</div>
-                  <div className="text-xl text-gray-300">Total Credits: {totalCredits}</div>
-                  <div className="text-lg text-gray-300 bg-gray-700 p-4 rounded-lg">{getMotivationalMessage(sgpa)}</div>
-                  <Button
-                    onClick={downloadResults}
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                  >
-                    Download Result
+          <Tabs defaultValue="theory" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5 bg-gray-800 border-gray-700">
+              <TabsTrigger value="theory" className="data-[state=active]:bg-gray-700 text-gray-300">
+                Theory
+              </TabsTrigger>
+              <TabsTrigger value="hybrid" className="data-[state=active]:bg-gray-700 text-gray-300">
+                Hybrid
+              </TabsTrigger>
+              <TabsTrigger value="hybrid2nd" className="data-[state=active]:bg-gray-700 text-gray-300">
+                Hybrid 2nd Yr
+              </TabsTrigger>
+              <TabsTrigger value="practical" className="data-[state=active]:bg-gray-700 text-gray-300">
+                Practical
+              </TabsTrigger>
+              <TabsTrigger value="online" className="data-[state=active]:bg-gray-700 text-gray-300">
+                Online
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Theory Subjects */}
+            <TabsContent value="theory">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Calculate Marks for Theory Subjects</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300">Assignment marks:</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.assignment || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, assignment: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Attendance marks:</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.attendance || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, attendance: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">MST-1 marks:</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.mst1 || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, mst1: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">MST-2 marks:</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.mst2 || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, mst2: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Quiz marks:</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.quiz || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, quiz: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Surprise Test marks:</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.surpriseTest || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, surpriseTest: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-gray-300">End Term marks (optional):</Label>
+                      <Input
+                        type="number"
+                        value={theoryMarks.endTerm || ""}
+                        onChange={(e) => setTheoryMarks({ ...theoryMarks, endTerm: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <Button onClick={calculateTheory} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Generate
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
+                  {theoryResult && (
+                    <div className="bg-gray-700 p-6 rounded-lg text-center">
+                      <div className="text-4xl font-bold text-purple-400 mb-2">{theoryResult.total}</div>
+                      <div className="text-2xl text-white mb-4">Grade: {theoryResult.grade}</div>
+                      <Button
+                        onClick={() => downloadResult("Theory", theoryResult)}
+                        variant="outline"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Result
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Hybrid Subjects */}
+            <TabsContent value="hybrid">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Calculate Marks for Hybrid Subjects</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300">Internal Theory marks (/40):</Label>
+                      <Input
+                        type="number"
+                        value={hybridMarks.internalTheory || ""}
+                        onChange={(e) =>
+                          setHybridMarks({ ...hybridMarks, internalTheory: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Sum of All 10 practical marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybridMarks.practicalSum || ""}
+                        onChange={(e) => setHybridMarks({ ...hybridMarks, practicalSum: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Lab MST marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybridMarks.labMST || ""}
+                        onChange={(e) => setHybridMarks({ ...hybridMarks, labMST: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">End Term (practical) marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybridMarks.endTermPractical || ""}
+                        onChange={(e) =>
+                          setHybridMarks({ ...hybridMarks, endTermPractical: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-gray-300">End Term (Theory) marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybridMarks.endTermTheory || ""}
+                        onChange={(e) => setHybridMarks({ ...hybridMarks, endTermTheory: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <Button onClick={calculateHybrid} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+
+                  {hybridResult && (
+                    <div className="bg-gray-700 p-6 rounded-lg text-center">
+                      <div className="text-4xl font-bold text-purple-400 mb-2">{hybridResult.total}</div>
+                      <div className="text-2xl text-white mb-4">Grade: {hybridResult.grade}</div>
+                      <Button
+                        onClick={() => downloadResult("Hybrid", hybridResult)}
+                        variant="outline"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Result
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Hybrid IInd Year */}
+            <TabsContent value="hybrid2nd">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Calculate Marks for Hybrid Subjects (IInd Year)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300">Attendance marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.attendance || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, attendance: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">MST-1 Hybrid marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.mst1 || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, mst1: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">MST-2 Hybrid marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.mst2 || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, mst2: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Experiment 1 marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.exp1 || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, exp1: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Experiment 2 marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.exp2 || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, exp2: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Experiment 3 marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.exp3 || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, exp3: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Experiment 4 marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.exp4 || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, exp4: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Class Performance marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.classPerformance || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, classPerformance: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Course Project marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.courseProject || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, courseProject: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">End Term Assessment Pr marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.endTermPr || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, endTermPr: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Assignment marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.assignment || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, assignment: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Quiz marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.quiz || ""}
+                        onChange={(e) => setHybrid2ndMarks({ ...hybrid2ndMarks, quiz: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Surprise Test marks:</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.surpriseTest || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, surpriseTest: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">End Term Assessment TH marks (optional):</Label>
+                      <Input
+                        type="number"
+                        value={hybrid2ndMarks.endTermTh || ""}
+                        onChange={(e) =>
+                          setHybrid2ndMarks({ ...hybrid2ndMarks, endTermTh: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <Button onClick={calculateHybrid2nd} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+
+                  {hybrid2ndResult && (
+                    <div className="bg-gray-700 p-6 rounded-lg text-center">
+                      <div className="text-4xl font-bold text-purple-400 mb-2">{hybrid2ndResult.total}</div>
+                      <div className="text-2xl text-white mb-4">Grade: {hybrid2ndResult.grade}</div>
+                      <Button
+                        onClick={() => downloadResult("Hybrid_2nd_Year", hybrid2ndResult)}
+                        variant="outline"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Result
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Practical Subjects */}
+            <TabsContent value="practical">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Calculate Marks for Practical Subjects</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300">Sum of All 10 practical marks:</Label>
+                      <Input
+                        type="number"
+                        value={practicalMarks.practicalSum || ""}
+                        onChange={(e) =>
+                          setPracticalMarks({ ...practicalMarks, practicalSum: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Lab MST marks:</Label>
+                      <Input
+                        type="number"
+                        value={practicalMarks.labMST || ""}
+                        onChange={(e) => setPracticalMarks({ ...practicalMarks, labMST: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-gray-300">End Term (practical) marks:</Label>
+                      <Input
+                        type="number"
+                        value={practicalMarks.endTermPractical || ""}
+                        onChange={(e) =>
+                          setPracticalMarks({ ...practicalMarks, endTermPractical: Number(e.target.value) || 0 })
+                        }
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <Button onClick={calculatePractical} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+
+                  {practicalResult && (
+                    <div className="bg-gray-700 p-6 rounded-lg text-center">
+                      <div className="text-4xl font-bold text-purple-400 mb-2">{practicalResult.total}</div>
+                      <div className="text-2xl text-white mb-4">Grade: {practicalResult.grade}</div>
+                      <Button
+                        onClick={() => downloadResult("Practical", practicalResult)}
+                        variant="outline"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Result
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Online Subjects */}
+            <TabsContent value="online">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Calculate Marks for Online Subjects</CardTitle>
+                  <CardDescription className="text-gray-300">(out of 100 will be calculated)</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300">Your Online marks (e.g: 146):</Label>
+                      <Input
+                        type="number"
+                        value={onlineMarks.obtained || ""}
+                        onChange={(e) => setOnlineMarks({ ...onlineMarks, obtained: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Total Marks (e.g: 160):</Label>
+                      <Input
+                        type="number"
+                        value={onlineMarks.total || ""}
+                        onChange={(e) => setOnlineMarks({ ...onlineMarks, total: Number(e.target.value) || 0 })}
+                        className="bg-gray-600 border-gray-500 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <Button onClick={calculateOnline} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+
+                  {onlineResult && (
+                    <div className="bg-gray-700 p-6 rounded-lg text-center">
+                      <div className="text-4xl font-bold text-purple-400 mb-2">{onlineResult.total}%</div>
+                      <div className="text-2xl text-white mb-4">Grade: {onlineResult.grade}</div>
+                      <Button
+                        onClick={() => downloadResult("Online", onlineResult)}
+                        variant="outline"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Result
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
