@@ -91,7 +91,7 @@ export default function MarksCalculator() {
 };
   const calculateHybrid = () => {
   const internalTheoryConverted = (hybridMarks.internalTheory / 40) * 20;
-  const practicalSumConverted = (hybridMarks.practicalSum / 300) * 15;
+  const practicalSumConverted = (hybridMarks.practicalSum / 300) * 25;
   const labMSTConverted = (hybridMarks.labMST / 10) * 5;
   const endTermPracticalConverted = (hybridMarks.endTermPractical / 40) * 20;
   const endTermTheoryConverted = (hybridMarks.endTermTheory / 60) * 30;
