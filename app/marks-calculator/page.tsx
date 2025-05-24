@@ -127,10 +127,14 @@ export default function MarksCalculator() {
 
 
   const calculatePractical = () => {
-    const total = practicalMarks.practicalSum + practicalMarks.labMST + practicalMarks.endTermPractical
+  const total =
+    (practicalMarks.labMST / 15) * 15 +
+    (practicalMarks.worksheet / 300) * 45 +
+    (practicalMarks.endTermPractical / 40) * 40;
 
-    setPracticalResult({ total, grade: getGrade(total) })
-  }
+  setPracticalResult({ total, grade: getGrade(total) });
+};
+
 
   const calculateOnline = () => {
     if (onlineMarks.total === 0) return
